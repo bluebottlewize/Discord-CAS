@@ -11,6 +11,7 @@
     "cas": "git+https://github.com/kcbanner/node-cas.git",
     "connect-mongo": "^4.4.1",
     "cookie-parser": "^1.4.5",
+    "dotenv": "^16.4.5",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "fs": "*",

@@ -1,4 +1,4 @@
-/bot/.env
-/bot/.venv/
-/portal/utils/config.js
-/portal/node_modules/
+.env
+.venv
+node_modules
+__pycache__

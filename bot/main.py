@@ -14,8 +14,8 @@ from config_verification import read_and_validate_config
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 MONGO_DATABASE = os.getenv("MONGO_DATABASE")
-MONGO_PORT = os.getenv("MONGO_PORT")
-PORTAL_LINK = os.getenv("PORTAL_LINK")
+MONGO_URI = os.getenv("MONGO_URI")
+BASE_URL = os.getenv("BASE_URL")
 SERVER_CONFIG = ConfigParser()
 
 bot = commands.Bot(command_prefix=".")
@@ -39,7 +39,7 @@ def get_realname_from_discordid(user_id):
 
 async def send_link(ctx):
     await ctx.send(
-        f"<{PORTAL_LINK}>\nSign in through our portal, and try again."
+        f"<{BASE_URL}>\nSign in through our portal, and try again."
     )
 
 
@@ -185,7 +185,7 @@ def main():
         exit(1)
 
     mongo_client = MongoClient(
-        f"mongodb://127.0.0.1:{MONGO_PORT}/{MONGO_DATABASE}?retryWrites=true&w=majority"
+        f"{MONGO_URI}/{MONGO_DATABASE}?retryWrites=true&w=majority"
     )
     db = mongo_client.get_database(MONGO_DATABASE)
 

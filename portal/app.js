@@ -16,7 +16,7 @@ const {compare_signature, pull_and_restart} = require('./utils/updater');
 
 let server_ids = [];
 
-parser.parseFile('../bot/server_config.ini', (error, data) => {
+parser.parseFile('server_config.ini', (error, data) => {
   if (error) {
     logger.error(error);
     return;

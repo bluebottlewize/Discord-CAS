@@ -1,5 +1,6 @@
 from configparser import ConfigParser
 
+
 def read_and_validate_config(SERVER_CONFIG: ConfigParser, config_file_path):
     SERVER_CONFIG.read(config_file_path, encoding='utf-8')
 
@@ -22,5 +23,5 @@ def read_and_validate_config(SERVER_CONFIG: ConfigParser, config_file_path):
     return True
 
 if __name__ == "__main__":
-    if not read_and_validate_config(ConfigParser(), "bot/server_config.ini"):
+    if not read_and_validate_config(ConfigParser(), "server_config.ini"):
         exit(1)
