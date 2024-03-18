@@ -12,8 +12,6 @@ const User = require('./models/User');
 
 const parser = require('./utils/parser');
 
-const {compare_signature, pull_and_restart} = require('./utils/updater');
-
 let server_ids = [];
 
 parser.parseFile('server_config.ini', (error, data) => {
@@ -45,24 +43,7 @@ app.get('/test', (req, res) => {
 });
 
 app.post('/webhooks/update', async (req, res) => {
-	const event_type = req.get('X-GitHub-Event');
-	logger.info(`Received ${event_type} GitHub event`);
-	if (event_type !== 'push'){
-		res.send("Ok. Not needed though.")
-		return;
-	}
-	if (req.body['ref'] !== 'refs/heads/master'){
-		res.send("Thanks. But I only care about master.")
-		return;
-	}
-	const signature = req.get('X-Hub-Signature-256');
-	if (!compare_signature(config.GITHUB_SECRET, signature, req.rawBody)){
-		logger.info("Invalid signature");
-		res.send(403, "You're not github. Impostor.");
-		return;
-	}
-	res.send("Thanks.");
-	pull_and_restart();
+    res.send("This endpoint has been removed.");
 });
 
 app.get('/', (req, res) => {

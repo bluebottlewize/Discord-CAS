@@ -7,9 +7,6 @@ const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const DISCORD_SECRET = process.env.DISCORD_SECRET;
 const DISCORD_REDIRECT = `${BASE_URL}/discord/callback`;
 
-// GitHub Webhook Secret Token
-const GITHUB_SECRET = process.env.GITHUB_SECRET;
-
 // secret for express middleware
 const SECRET = process.env.SECRET;
 
@@ -24,6 +21,5 @@ module.exports = {
   ATLAS_URL,
   DISCORD_CLIENT_ID,
   DISCORD_SECRET,
-  DISCORD_REDIRECT,
-  GITHUB_SECRET
+  DISCORD_REDIRECT
 }
