@@ -1,5 +1,11 @@
 version: '3.8'
 
+networks:
+  portal_network:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+
 services:
     bot:
         build:
@@ -15,6 +21,9 @@ services:
         build:
             context: ./portal
             dockerfile: Dockerfile
+        networks:
+            portal_network:
+                ipv4_address: 172.20.0.5
         env_file:
             - ./.env
         volumes:
