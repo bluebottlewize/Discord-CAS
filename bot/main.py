@@ -154,6 +154,7 @@ async def verify_user(ctx):
 
 @bot.command(name="backend_info")
 async def backend_info(ctx):
+    """For debugging server info; sends details of the server."""
     uname = platform.uname()
     await ctx.send(
         f"Here are the server details:\n"
@@ -175,6 +176,11 @@ async def query(
     ctx: commands.Context,
     identifier: discord.User,
 ):
+    """
+    First checks if the server is an academic one. If so, finds the user who invoked the
+    command (by Discord ID) in the DB. If present, replies with their name, email and
+    roll number. Otherwise replies telling the user they are not registed with CAS.
+    """
     user = db.users.find_one({"discordId": str(identifier.id)})
     if user:
         await ctx.reply(
@@ -186,6 +192,9 @@ async def query(
 
 @query.error
 async def query_error(ctx, error):
+    """
+    For the `query` command, if the server is not academic, replies with error message.
+    """
     if isinstance(error, commands.CheckFailure):
         await ctx.reply("This server is not for academic purposes.")
 
@@ -196,6 +205,13 @@ async def roll(
     ctx: commands.Context,
     identifier: int,
 ):
+    """
+     First checks if the server is an academic one. If so, finds the user who invoked the
+    command in the DB. If present, replies with their name, email and
+    roll number. Otherwise replies telling the user they are not registed with CAS.
+
+    Same as the `query` command, except this searches by roll number instead of Discord ID.
+    """
     user = db.users.find_one({"rollno": str(identifier)})
     if user:
         await ctx.reply(
@@ -207,16 +223,25 @@ async def roll(
 
 @roll.error
 async def roll_error(ctx, error):
+    """
+    For the `roll` command, if the server is not academic, replies with error message.
+    """
     if isinstance(error, commands.CheckFailure):
         await ctx.reply("This server is not for academic purposes.")
 
 
 @bot.event
 async def on_ready():
+    """This is executed when the bot connects to a server."""
     print(f"{bot.user.name} has connected to Discord!")
 
 
 def main():
+    """
+    First it checks if each server has a valid configuration. If not, it exits with an error.
+    Otherwise, It iniates a client for a MongoDB instance and fetches the database from there,
+    setting the global variable `db`. Then it starts the bot.
+    """
     global db
 
     if not read_and_validate_config(SERVER_CONFIG, "server_config.ini"):
