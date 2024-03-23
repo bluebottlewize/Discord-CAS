@@ -2,6 +2,7 @@ import os
 import sys
 import asyncio
 from configparser import ConfigParser
+import platform
 from dotenv import load_dotenv
 
 import discord
@@ -151,6 +152,17 @@ async def verify_user(ctx):
                     Please run `.verify` again."
             )
 
+@bot.command(name="backend_info")
+async def backend_info(ctx):
+    uname = platform.uname()
+    await ctx.send(
+        f"Here are the server details:\n"
+        f"system: {uname.system}\n"
+        f"node: {uname.node}\n"
+        f"release: {uname.release}\n"
+        f"version: {uname.version}\n"
+        f"machine: {uname.machine}"
+    )
 
 def is_academic(ctx: commands.Context):
     """Checks if the server is an academic server."""
