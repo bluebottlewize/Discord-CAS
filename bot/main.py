@@ -1,3 +1,32 @@
+"""
+The CAS bot is defined here. Utility methods for verification, fetching details, roles, nicknames
+etc. are defined, as well the bot commands and a main routine.
+
+This module defines the following functions.
+
+- `get_users_from_discordid()`: Find users from DB given user ID
+- `is_verified()`: If a user is present in DB or not
+- `get_realname_from_discordid()`: Get a user's real name from their Discord ID.
+- `send_link()`: Send link for reattempting authentication.
+- `get_config()`: Gives the config object for a given server.
+- `create_roles_if_missing()`: Adds missing roles to a server.
+- `assign_role()`: Adds specified roles to the given user post-verification.
+- `delete_role()`: Removes specified roles from the given user post-verification.
+- `set_nickname()`: Sets nickname of the given user to real name if server specifies.
+- `post_verification()`: Handle role add/delete and nickname set post-verification of given user.
+- `verify_user()`: Implements `.verify`.
+- `backend_info()`: Logs server details for debug purposes
+- `is_academic()`: Checks if server is for academic use.
+- `query()`: Returns user details, uses Discord ID to find in DB.
+- `query_error()`: Replies eror message if server is not academic.
+- `roll()`: Returns user details, uses roll number to find in DB.
+- `roll_error()`: Replies eror message if server is not academic.
+- `on_ready()`: Logs a message when the bot joins a server.
+- `main()`: Reads server config, loads DB and starts bot.
+
+"""
+
+
 import os
 import sys
 import asyncio
