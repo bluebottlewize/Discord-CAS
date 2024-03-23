@@ -39,7 +39,7 @@ from discord.ext import commands
 
 from pymongo import MongoClient, database
 
-from config_verification import read_and_validate_config
+from .config_verification import read_and_validate_config
 
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
@@ -149,7 +149,7 @@ async def post_verification(ctx, user):
 
     try:
         await set_nickname(user, server_config)
-    except:
+    except: # pylint: disable=W0702
         await ctx.send("Bot should have a role higher than you to change your nickname")
 
     await ctx.send(f"<@{user.id}> has been CAS-verified!")
@@ -271,7 +271,7 @@ def main():
     Otherwise, It iniates a client for a MongoDB instance and fetches the database from there,
     setting the global variable `db`. Then it starts the bot.
     """
-    global db
+    global db # pylint: disable=W0603
 
     if not read_and_validate_config(SERVER_CONFIG, "server_config.ini"):
         sys.exit(1)
