@@ -1,8 +1,8 @@
+import os
+import sys
 import asyncio
 from configparser import ConfigParser
-import platform
 from dotenv import load_dotenv
-import os
 
 import discord
 from discord.ext import commands
@@ -23,37 +23,45 @@ db: database.Database = None  # assigned in main function
 
 
 def get_users_from_discordid(user_id):
+    """
+    Finds users from the database, given their ID and returns
+    a list containing those users.
+    """
     users = list(db.users.find({"discordId": str(user_id)}))
     return users
 
 
 def is_verified(user_id):
-    return True if get_users_from_discordid(user_id) else False
+    """Checks if any user with the given ID exists in the DB or not."""
+    return len(get_users_from_discordid(user_id)) == 0
 
 
 def get_realname_from_discordid(user_id):
+    """Returns the real name of the first user who matches the given ID."""
     users = get_users_from_discordid(user_id)
     assert users
     return users[0]["name"]
 
 
 async def send_link(ctx):
-    await ctx.send(
-        f"<{BASE_URL}>\nSign in through our portal, and try again."
-    )
+    """Sends the base url for users to reattempt sign-in."""
+    await ctx.send(f"<{BASE_URL}>\nSign in through our portal, and try again.")
 
 
 def get_config(server_id: str):
+    """Returns the configuration object for a given Discord server (given server ID)
+    if it is present in the server config file."""
     for section in SERVER_CONFIG.sections():
         section_obj = SERVER_CONFIG[section]
         if section_obj["serverid"] == server_id:
             return section_obj
 
     print(f"Server id {server_id} not found in server config")
-    exit(1)
+    sys.exit(1)
 
 
 async def create_roles_if_missing(guild, req_guild_roles):
+    """Creates roles for the given guild if they are missing."""
     for role in req_guild_roles:
         roles_present = guild.roles
         role_names = [role.name for role in roles_present]
@@ -63,6 +71,9 @@ async def create_roles_if_missing(guild, req_guild_roles):
 
 
 async def assign_role(guild, user, server_config):
+    """For a given guild, user and server confg object, creates roles in the guild if missing,
+    and then assigns the guild's roles to the user post-verification.
+    """
     req_roles = server_config["grantroles"].strip().split(",")
 
     await create_roles_if_missing(guild, req_roles)
@@ -73,16 +84,21 @@ async def assign_role(guild, user, server_config):
 
 
 async def delete_role(guild, user, server_config):
+    """
+    For a given guild, user and server config object, remove roles that the server specified
+    to be deleted post-verification.
+    """
     config_remove_roles = server_config["deleteroles"].strip().split(",")
-    to_remove_roles = [
-        role for role in guild.roles if role.name in config_remove_roles
-    ]
+    to_remove_roles = [role for role in guild.roles if role.name in config_remove_roles]
 
     # if the user does not have that role, this does not crash
     await user.remove_roles(*to_remove_roles)
 
 
 async def set_nickname(user, server_config):
+    """If the server wants users to have their actual names as server nicknames,
+    set the given user's nickname to their name fetched from the database.
+    """
     if server_config["setrealname"] == "no":
         return
 
@@ -91,6 +107,10 @@ async def set_nickname(user, server_config):
 
 
 async def post_verification(ctx, user):
+    """
+    For the Discord context and the given user, assign roles to be added post-verification
+    and remove roles to be deleted post verification as specified in the serve's config object.
+    """
     server_id = str(ctx.guild.id)
     server_config = get_config(server_id)
 
@@ -100,15 +120,19 @@ async def post_verification(ctx, user):
     try:
         await set_nickname(user, server_config)
     except:
-        await ctx.send(
-            "Bot should have a role higher than you to change your nickname"
-        )
+        await ctx.send("Bot should have a role higher than you to change your nickname")
 
     await ctx.send(f"<@{user.id}> has been CAS-verified!")
 
 
 @bot.command(name="verify")
 async def verify_user(ctx):
+    """
+    Runs when the user types `.verify` in the server. First tries to find the user in the DB.
+    If present, performs post-verification actions. If not verified, Sends the link to authenticate
+    and waits for a minute. xits if the user still is not found after that and
+    tells user to run `.verify` again.
+    """
     author = ctx.message.author
     user_id = author.id
 
@@ -118,29 +142,18 @@ async def verify_user(ctx):
         if verification:
             await post_verification(ctx, author)
             break
-        elif i == 0:
+        if i == 0:
             await send_link(ctx)
             await asyncio.sleep(60)
         else:
             await ctx.send(
-                f"Sorry <@{user_id}>, could not auto-detect your verification. Please run `.verify` again."
+                f"Sorry <@{user_id}>, could not auto-detect your verification. \
+                    Please run `.verify` again."
             )
 
 
-@bot.command(name="backend_info")
-async def backend_info(ctx):
-    uname = platform.uname()
-    await ctx.send(
-        f"Here are the server details:\n"
-        f"system: {uname.system}\n"
-        f"node: {uname.node}\n"
-        f"release: {uname.release}\n"
-        f"version: {uname.version}\n"
-        f"machine: {uname.machine}"
-    )
-
-
 def is_academic(ctx: commands.Context):
+    """Checks if the server is an academic server."""
     return get_config(str(ctx.guild.id)).get("is_academic", False)
 
 
@@ -195,7 +208,7 @@ def main():
     global db
 
     if not read_and_validate_config(SERVER_CONFIG, "server_config.ini"):
-        exit(1)
+        sys.exit(1)
 
     mongo_client = MongoClient(
         f"{MONGO_URI}/{MONGO_DATABASE}?retryWrites=true&w=majority"
