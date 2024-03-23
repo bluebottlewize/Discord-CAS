@@ -1,6 +1,6 @@
 import asyncio
 from configparser import ConfigParser
-import typing
+import platform
 from dotenv import load_dotenv
 import os
 
@@ -125,6 +125,19 @@ async def verify_user(ctx):
             await ctx.send(
                 f"Sorry <@{user_id}>, could not auto-detect your verification. Please run `.verify` again."
             )
+
+
+@bot.command(name="backend_info")
+async def backend_info(ctx):
+    uname = platform.uname()
+    await ctx.send(
+        f"Here are the server details:\n"
+        f"system: {uname.system}\n"
+        f"node: {uname.node}\n"
+        f"release: {uname.release}\n"
+        f"version: {uname.version}\n"
+        f"machine: {uname.machine}"
+    )
 
 
 def is_academic(ctx: commands.Context):
