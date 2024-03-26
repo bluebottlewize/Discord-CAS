@@ -26,5 +26,8 @@
   "scripts": {
     "dev": "nodemon index.js",
     "start": "node index.js"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0"
   }
 }
