@@ -22,4 +22,4 @@ module.exports = {
   DISCORD_CLIENT_ID,
   DISCORD_SECRET,
   DISCORD_REDIRECT
-}
+};
