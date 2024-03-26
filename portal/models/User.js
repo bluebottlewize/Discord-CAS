@@ -1,5 +1,5 @@
-const mongoose = require('mongoose')
-const findOrCreate = require('mongoose-findorcreate')
+const mongoose = require("mongoose");
+const findOrCreate = require("mongoose-findorcreate");
 
 const user = mongoose.Schema({
   discordId: {
@@ -27,4 +27,4 @@ const user = mongoose.Schema({
 
 user.plugin(findOrCreate);
 
-module.exports = mongoose.model('User', user);
+module.exports = mongoose.model("User", user);
