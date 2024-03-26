@@ -149,7 +149,7 @@ async def post_verification(ctx, user):
 
     try:
         await set_nickname(user, server_config)
-    except: # pylint: disable=W0702
+    except: # pylint: disable=bare-except
         await ctx.send("Bot should have a role higher than you to change your nickname")
 
     await ctx.send(f"<@{user.id}> has been CAS-verified!")
@@ -271,7 +271,7 @@ def main():
     Otherwise, It iniates a client for a MongoDB instance and fetches the database from there,
     setting the global variable `db`. Then it starts the bot.
     """
-    global db # pylint: disable=W0603
+    global db # pylint: disable=global-statement
 
     if not read_and_validate_config(SERVER_CONFIG, "server_config.ini"):
         sys.exit(1)
