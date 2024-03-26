@@ -21,13 +21,13 @@ parser.parseFile("server_config.ini", (error, data) => {
   }
 
   // the default section does not have serverid
-  server_ids = Object.values(data).filter(val => val.hasOwnProperty("serverid")).map(x => x.serverid);
+  server_ids = Object.values(data).filter(val => Object.hasOwn(val, "serverid")).map(x => x.serverid);
 });
 
 const app = express();
 
 app.use(express.json({
-	 verify: (req, res, buf, encoding) => {
+  verify: (req, res, buf, encoding) => {
     if (buf && buf.length) {
       req.rawBody = buf.toString(encoding || "utf8");
     }
