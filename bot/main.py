@@ -63,7 +63,7 @@ def get_users_from_discordid(user_id):
 
 def is_verified(user_id):
     """Checks if any user with the given ID exists in the DB or not."""
-    return len(get_users_from_discordid(user_id)) == 0
+    return len(get_users_from_discordid(user_id)) != 0
 
 
 def get_realname_from_discordid(user_id):
