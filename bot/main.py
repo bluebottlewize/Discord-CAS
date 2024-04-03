@@ -164,7 +164,7 @@ async def post_verification(ctx, user):
 
     try:
         await set_nickname(user, server_config)
-    except: # pylint: disable=bare-except
+    except discord.DiscordException:
         await ctx.send("Bot should have a role higher than you to change your nickname")
 
     await ctx.send(f"<@{user.id}> has been CAS-verified!")
