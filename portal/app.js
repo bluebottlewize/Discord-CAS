@@ -21,22 +21,29 @@ parser.parseFile("server_config.ini", (error, data) => {
   }
 
   // the default section does not have serverid
-  server_ids = Object.values(data).filter(val => Object.hasOwn(val, "serverid")).map(x => x.serverid);
+  server_ids = Object.values(data)
+    .filter((val) => Object.hasOwn(val, "serverid"))
+    .map((x) => x.serverid);
 });
 
 const app = express();
 
-app.use(express.json({
-  verify: (req, res, buf, encoding) => {
-    if (buf && buf.length) {
-      req.rawBody = buf.toString(encoding || "utf8");
-    }
-  },
-}));
+app.use(
+  express.json({
+    verify: (req, res, buf, encoding) => {
+      if (buf && buf.length) {
+        req.rawBody = buf.toString(encoding || "utf8");
+      }
+    },
+  }),
+);
 app.use(morgan("dev"));
-app.use(session({
-  secret: config.SECRET, store: MongoStore.create({mongoUrl: config.ATLAS_URL})
-}));
+app.use(
+  session({
+    secret: config.SECRET,
+    store: MongoStore.create({ mongoUrl: config.ATLAS_URL }),
+  }),
+);
 
 app.get("/test", (req, res) => {
   res.send("Hello World!");
@@ -51,7 +58,9 @@ app.get("/", (req, res) => {
 });
 
 app.get("/discord", (req, res) => {
-  res.redirect(`https://discordapp.com/api/oauth2/authorize?client_id=${config.DISCORD_CLIENT_ID}&scope=identify&response_type=code&redirect_uri=${config.DISCORD_REDIRECT}`);
+  res.redirect(
+    `https://discordapp.com/api/oauth2/authorize?client_id=${config.DISCORD_CLIENT_ID}&scope=identify&response_type=code&redirect_uri=${config.DISCORD_REDIRECT}`,
+  );
 });
 
 async function makeQuery(code, redirect_uri) {
@@ -63,7 +72,7 @@ async function makeQuery(code, redirect_uri) {
     redirect_uri,
   };
 
-  const _encode = obj => {
+  const _encode = (obj) => {
     let string = "";
 
     for (const [key, value] of Object.entries(obj)) {
@@ -108,7 +117,10 @@ app.get("/discord/callback", async (req, res) => {
   const user = await userResponse.json();
 
   if (!user) {
-    res.send("Some error occured while communicating to discord :pensive:", 500);
+    res.send(
+      "Some error occured while communicating to discord :pensive:",
+      500,
+    );
     return;
   }
 
@@ -131,40 +143,54 @@ app.get("/cas", async (req, res) => {
     return;
   }
 
-  await cas.authenticate(req, res, async (err, status, username, extended) => {
-    if (err) {
-      res.send("Some error occured with the CAS server :pensive:", 500);
-    } else {
-      if (!status) {
-        /* TODO: Identify what status false means */
-        res.send("Status false?", 500);
-      }
-
-      let rollno;
-      try {
-        rollno =  extended.attributes.rollno[0];
-      } catch (e) {
-        rollno = "not-existent";
-        logger.info("User roll number does not exist");
-      }
-
-      let name = extended.attributes.name[0];
-      name = name.split(" ").map(val => val[0].toUpperCase() + val.substring(1)).join(" ");
-
-      const user = await User.findOrCreate({"discordId": req.session.discordId}, {
-        "discordId": req.session.discordId,
-        name, rollno,
-        "email": extended.attributes["e-mail"][0],
-      });
-
-      if (user) {
-        res.send("Success! :smile: You can now wait for the bot to auto-detect your verification, " +
-                    "or run `.verify` once again.");
+  await cas.authenticate(
+    req,
+    res,
+    async (err, status, username, extended) => {
+      if (err) {
+        res.send("Some error occured with the CAS server :pensive:", 500);
       } else {
-        res.send("Some error occured :pensive:");
+        if (!status) {
+          /* TODO: Identify what status false means */
+          res.send("Status false?", 500);
+        }
+
+        let rollno;
+        try {
+          rollno = extended.attributes.rollno[0];
+        } catch (e) {
+          rollno = "not-existent";
+          logger.info("User roll number does not exist");
+        }
+
+        let name = extended.attributes.name[0];
+        name = name
+          .split(" ")
+          .map((val) => val[0].toUpperCase() + val.substring(1))
+          .join(" ");
+
+        const user = await User.findOrCreate(
+          { discordId: req.session.discordId },
+          {
+            discordId: req.session.discordId,
+            name,
+            rollno,
+            email: extended.attributes["e-mail"][0],
+          },
+        );
+
+        if (user) {
+          res.send(
+            "Success! :smile: You can now wait for the bot to auto-detect your verification, " +
+              "or run `.verify` once again.",
+          );
+        } else {
+          res.send("Some error occured :pensive:");
+        }
       }
-    }
-  }, config.BASE_URL + "/cas");
+    },
+    config.BASE_URL + "/cas",
+  );
 });
 
 module.exports = app;

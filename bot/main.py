@@ -26,7 +26,6 @@ This module defines the following functions.
 
 """
 
-
 import os
 import sys
 import asyncio
@@ -154,8 +153,8 @@ async def post_verification(ctx, user):
 
     if server_config is None:
         await ctx.send(
-                "This server is not authorized to work with CAS-bot. Read the instructions to invite the bot in the project README"
-                )
+            "This server is not authorized to work with CAS-bot. Read the instructions to invite the bot in the project README"
+        )
         await ctx.guild.leave()
         return
 
@@ -196,6 +195,7 @@ async def verify_user(ctx):
                     Please run `.verify` again."
             )
 
+
 @bot.command(name="backend_info")
 async def backend_info(ctx):
     """For debugging server info; sends details of the server."""
@@ -209,6 +209,7 @@ async def backend_info(ctx):
         f"machine: {uname.machine}"
     )
 
+
 def is_academic(ctx: commands.Context):
     """Checks if the server is an academic server."""
     server_config = get_config(str(ctx.guild.id))
@@ -216,7 +217,6 @@ def is_academic(ctx: commands.Context):
     if server_config is None:
         return False
     return server_config.get("is_academic", False)
-
 
 
 @bot.command(name="query")
@@ -293,7 +293,7 @@ async def on_guild_join(guild):
             await first_channel.send(welcome_message)
         await guild.leave()
         return
-    
+
     if first_channel:
         await first_channel.send(welcome_message)
 
@@ -310,7 +310,7 @@ def main():
     Otherwise, It iniates a client for a MongoDB instance and fetches the database from there,
     setting the global variable `db`. Then it starts the bot.
     """
-    global db # pylint: disable=global-statement
+    global db  # pylint: disable=global-statement
 
     if not read_and_validate_config(SERVER_CONFIG, "server_config.ini"):
         sys.exit(1)

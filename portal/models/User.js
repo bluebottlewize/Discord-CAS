@@ -22,7 +22,7 @@ const user = mongoose.Schema({
   view: {
     type: Boolean,
     default: true,
-  }
+  },
 });
 
 user.plugin(findOrCreate);

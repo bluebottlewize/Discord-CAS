@@ -9,20 +9,19 @@ function parse(string) {
   var group;
   var match;
 
-  for(let i = 0, len = lines.length; i !== len; i++){
-    if((match = lines[i].match(REG_GROUP)))
+  for (let i = 0, len = lines.length; i !== len; i++) {
+    if ((match = lines[i].match(REG_GROUP)))
       object[match[1]] = group = object[match[1]] || {};
-    else if(group && (match = lines[i].match(REG_PROP)))
+    else if (group && (match = lines[i].match(REG_PROP)))
       group[match[1]] = match[2];
   }
 
   return object;
 }
 
-function parseFile(file, callback){
-  fs.readFile(file, "utf-8", function(error, data){
-    if(error)
-      return callback(error);
+function parseFile(file, callback) {
+  fs.readFile(file, "utf-8", function (error, data) {
+    if (error) return callback(error);
 
     callback(null, parse(data));
   });

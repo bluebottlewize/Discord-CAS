@@ -18,13 +18,14 @@ Formating for javascript isnt strict as long as 80 character limit is followed.
 ## Privacy policy
 
 When a user authenticates with our web portal, we store their following
-information: 
-  1. Full Name 
-  1. Email 
-  1. Roll number 
-  1. DiscordID.
+information:
 
-1,2,3 are obtained from CAS, and 4 is obtained from Discord OAuth. 
+1. Full Name
+1. Email
+1. Roll number
+1. DiscordID.
+
+1,2,3 are obtained from CAS, and 4 is obtained from Discord OAuth.
 
 This data is used strictly for authentication only, and not visible publicly.
 It is only visible to the server host.
@@ -38,10 +39,10 @@ MIT
 
 ## Adding the bot
 
-1. Make a pull request to the server by editing the `server_config.ini` file per your server requirements (see subsection below for more details) 
+1. Make a pull request to the server by editing the `server_config.ini` file per your server requirements (see subsection below for more details)
 2. Create a new role for the bot, which satisfies the criteria given in the next section.
 3. **After** your PR is merged, navigate to the [this URL](https://discord.com/oauth2/authorize?client_id=843107899944861706&permissions=469764096&redirect_uri=https%3A%2F%2Fosdg.iiit.ac.in%2Fcasbot%2Fbot&response_type=code&scope=bot%20identify) to invite the bot and add it to your server. Note that you must have "Manage Server" permission on this server. (If you're new to Discord roles, read the FAQ:
-[link](https://support.discord.com/hc/en-us/articles/214836687-Role-Management-101))
+   [link](https://support.discord.com/hc/en-us/articles/214836687-Role-Management-101))
 
 ### Configuration parameters
 
@@ -84,12 +85,12 @@ If at any point you face any difficulty, please raise a new issue in this GitHub
 
 The current instance of the bot used by IIIT-H clubs is hosted by:
 
-Name            | Time period                | Server
---------------- | -------------------------- | ------
-Ankith Pai      | March 19, 2024 -           | https://osdg.iiit.ac.in
-Shamil          | 2022 - early 2024          | https://osdg.iiit.ac.in
-Gaurang Tandon  | late June 21 - 2022 ??     | ??
-Vidit Jain      | April 6, 21 - late June 21 | ??
+| Name           | Time period                | Server                  |
+| -------------- | -------------------------- | ----------------------- |
+| Ankith Pai     | March 19, 2024 -           | https://osdg.iiit.ac.in |
+| Shamil         | 2022 - early 2024          | https://osdg.iiit.ac.in |
+| Gaurang Tandon | late June 21 - 2022 ??     | ??                      |
+| Vidit Jain     | April 6, 21 - late June 21 | ??                      |
 
 This instance is intended to be used only by IIIT-H related discord servers. See the section below if you want to host the project for any other purpose.
 
