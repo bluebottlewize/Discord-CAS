@@ -39,10 +39,10 @@ jobs:
           pip install ruff
       
       - name: Lint with ruff
-        run: ruff check --fix *.py
+        run: ruff check --fix bot/*.py
       
       - name: Format with ruff
-        run: ruff format *.py
+        run: ruff format bot/*.py
       
       - name: Remove ruff cache
         run: rm -rf .ruff_cache
