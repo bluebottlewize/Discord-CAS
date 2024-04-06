@@ -25,14 +25,10 @@ This module defines the following functions.
 - `main()`: Reads server config, loads DB and starts bot.
 
 """
-
-
-import os
 import sys
 import asyncio
 from configparser import ConfigParser
 import platform
-from dotenv import load_dotenv
 
 import discord
 from discord.ext import commands
@@ -41,12 +37,13 @@ from discord.utils import get
 from pymongo import MongoClient, database
 
 from config_verification import read_and_validate_config
+from components.variables import Variables
 
-load_dotenv()
-TOKEN = os.getenv("DISCORD_TOKEN")
-MONGO_DATABASE = os.getenv("MONGO_DATABASE")
-MONGO_URI = os.getenv("MONGO_URI")
-BASE_URL = os.getenv("BASE_URL")
+
+TOKEN = Variables.DISCORD_TOKEN
+MONGO_DATABASE = Variables.MONGO_DATABASE
+MONGO_URI = Variables.MONGO_URI
+BASE_URL = Variables.MONGO_DATABASE
 SERVER_CONFIG = ConfigParser()
 
 
