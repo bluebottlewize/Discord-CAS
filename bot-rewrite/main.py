@@ -27,7 +27,6 @@ This module defines the following functions.
 """
 import sys
 import asyncio
-from configparser import ConfigParser
 import platform
 
 import discord
@@ -44,7 +43,7 @@ TOKEN = Variables.DISCORD_TOKEN
 MONGO_DATABASE = Variables.MONGO_DATABASE
 MONGO_URI = Variables.MONGO_URI
 BASE_URL = Variables.MONGO_DATABASE
-SERVER_CONFIG = ConfigParser()
+SERVER_CONFIG = Variables.SERVER_CONFIG
 
 
 class CasBot(commands.Bot):
