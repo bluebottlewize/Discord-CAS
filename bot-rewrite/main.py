@@ -355,15 +355,15 @@ def main():
     Otherwise, It iniates a client for a MongoDB instance and fetches the database from there,
     setting the global variable `db`. Then it starts the bot.
     """
-    # global db # pylint: disable=global-statement
+    global db  # pylint: disable=global-statement
 
-    if not read_and_validate_config(SERVER_CONFIG, "../server_config.ini"):
+    if not read_and_validate_config(SERVER_CONFIG, "server_config.ini"):
         sys.exit(1)
 
-    # mongo_client = MongoClient(
-    #    f"{MONGO_URI}/{MONGO_DATABASE}?retryWrites=true&w=majority"
-    # )
-    # db = mongo_client.get_database(MONGO_DATABASE)
+    mongo_client = MongoClient(
+        f"{MONGO_URI}/{MONGO_DATABASE}?retryWrites=true&w=majority"
+    )
+    db = mongo_client.get_database(MONGO_DATABASE)
 
     bot.run(TOKEN)
 
