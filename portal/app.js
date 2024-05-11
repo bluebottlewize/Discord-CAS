@@ -54,7 +54,7 @@ app.post("/webhooks/update", async (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.redirect("discord");
+  res.redirect(`${config.BASE_URL}/discord`);
 });
 
 app.get("/discord", (req, res) => {
@@ -126,7 +126,7 @@ app.get("/discord/callback", async (req, res) => {
 
   req.session.discordId = user.id;
 
-  res.redirect("../cas");
+  res.redirect(`${config.BASE_URL}/cas`);
 });
 
 const CAS = require("cas");
