@@ -147,7 +147,7 @@ app.get(`${config.SUBPATH}/bot`, async (req, res) => {
   const redirect_uri = `${config.BASE_URL}/bot`;
   const responseJson = await makeQuery(code, redirect_uri);
   if (responseJson && responseJson.access_token) {
-    res.send("Added successfully!");     
+    res.send("Added successfully!");
   } else {
     logger.error(responseJson);
     res.send("Unkown error occured");
