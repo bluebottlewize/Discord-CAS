@@ -1,5 +1,12 @@
-const PORT = process.env.PORT;
-const BASE_URL = process.env.BASE_URL;
+const PROTOCOL = process.env.PROTOCOL;
+const HOST = process.env.HOST;
+
+const PORT = process.env.PORT ? process.env.PORT : "80";
+const _PORT_AS_SUFFIX = process.env.PORT ? `:${PORT}` : "";
+
+const SUBPATH = process.env.SUBPATH;
+
+const BASE_URL = `${PROTOCOL}://${HOST}${_PORT_AS_SUFFIX}${SUBPATH}`;
 
 const ATLAS_URL = `${process.env.MONGO_URI}/${process.env.MONGO_DATABASE}`;
 
@@ -17,6 +24,7 @@ module.exports = {
   SECRET,
   CAS_LINK,
   PORT,
+  SUBPATH,
   BASE_URL,
   ATLAS_URL,
   DISCORD_CLIENT_ID,

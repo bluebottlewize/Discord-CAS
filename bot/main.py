@@ -44,7 +44,15 @@ load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 MONGO_DATABASE = os.getenv("MONGO_DATABASE")
 MONGO_URI = os.getenv("MONGO_URI")
-BASE_URL = os.getenv("BASE_URL")
+
+PROTOCOL = os.getenv("PROTOCOL")
+HOST = os.getenv("HOST")
+
+PORT = os.getenv("PORT") if os.getenv("PORT") else "80"
+_PORT_AS_SUFFIX = f":{PORT}" if os.getenv("PORT") else ""
+
+SUBPATH = os.getenv("SUBPATH")
+BASE_URL = f"{PROTOCOL}://{HOST}{_PORT_AS_SUFFIX}{SUBPATH}"
 SERVER_CONFIG = ConfigParser()
 
 bot = commands.Bot(command_prefix=".")

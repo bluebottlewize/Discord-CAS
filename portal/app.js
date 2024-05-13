@@ -45,19 +45,19 @@ app.use(
   }),
 );
 
-app.get("/test", (req, res) => {
+app.get(`${config.SUBPATH}/test`, (req, res) => {
   res.send("Hello World!");
 });
 
-app.post("/webhooks/update", async (req, res) => {
+app.post(`${config.SUBPATH}/webhooks/update`, async (req, res) => {
   res.send("This endpoint has been removed.");
 });
 
-app.get("/", (req, res) => {
-  res.redirect(`${config.BASE_URL}/discord`);
+app.get(`${config.SUBPATH}/`, (req, res) => {
+  res.redirect(`${config.SUBPATH}/discord`);
 });
 
-app.get("/discord", (req, res) => {
+app.get(`${config.SUBPATH}/discord`, (req, res) => {
   res.redirect(
     `https://discordapp.com/api/oauth2/authorize?client_id=${config.DISCORD_CLIENT_ID}&scope=identify&response_type=code&redirect_uri=${config.DISCORD_REDIRECT}`,
   );
@@ -96,7 +96,7 @@ async function makeQuery(code, redirect_uri) {
   return await response.json();
 }
 
-app.get("/discord/callback", async (req, res) => {
+app.get(`${config.SUBPATH}/discord/callback`, async (req, res) => {
   /* Get user from discord */
   if (!req.query.code) {
     res.send("You are not discord :angry:", 400);
@@ -126,7 +126,7 @@ app.get("/discord/callback", async (req, res) => {
 
   req.session.discordId = user.id;
 
-  res.redirect(`${config.BASE_URL}/cas`);
+  res.redirect(`${config.SUBPATH}/cas`);
 });
 
 const CAS = require("cas");
@@ -137,7 +137,7 @@ const cas = new CAS({
   version: 2.0,
 });
 
-app.get("/cas", async (req, res) => {
+app.get(`${config.SUBPATH}/cas`, async (req, res) => {
   if (!req.session.discordId) {
     res.send("Please first authenticate from Discord :angry:", 500);
     return;
