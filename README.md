@@ -41,7 +41,7 @@ MIT
 
 1. Make a pull request to the server by editing the `server_config.ini` file per your server requirements (see subsection below for more details)
 2. Create a new role for the bot, which satisfies the criteria given in the next section.
-3. **After** your PR is merged, navigate to the [this URL](https://discord.com/oauth2/authorize?client_id=843107899944861706&permissions=469764096&redirect_uri=https%3A%2F%2Fosdg.iiit.ac.in%2Fcasbot%2Fbot&response_type=code&scope=bot%20identify) to invite the bot and add it to your server. Note that you must have "Manage Server" permission on this server. (If you're new to Discord roles, read the FAQ:
+3. **After** your PR is merged, navigate to the [this URL](https://osdg.iiit.ac.in/casbot/discord/invite) to invite the bot and add it to your server. Note that you must have "Manage Server" permission on this server. (If you're new to Discord roles, read the FAQ:
    [link](https://support.discord.com/hc/en-us/articles/214836687-Role-Management-101))
 
 ### Configuration parameters

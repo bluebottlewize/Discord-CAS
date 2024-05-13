@@ -1,4 +1,6 @@
 .env
+.env.prod
+.env.dev
 .venv
 node_modules
 __pycache__

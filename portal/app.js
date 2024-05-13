@@ -58,8 +58,16 @@ app.get(`${config.SUBPATH}/`, (req, res) => {
 });
 
 app.get(`${config.SUBPATH}/discord`, (req, res) => {
+  let redirect_uri = `${config.BASE_URL}/discord/callback`;
   res.redirect(
-    `https://discordapp.com/api/oauth2/authorize?client_id=${config.DISCORD_CLIENT_ID}&scope=identify&response_type=code&redirect_uri=${config.DISCORD_REDIRECT}`,
+    `https://discordapp.com/api/oauth2/authorize?client_id=${config.DISCORD_CLIENT_ID}&scope=identify&response_type=code&redirect_uri=${redirect_uri}`,
+  );
+});
+
+app.get(`${config.SUBPATH}/discord/invite`, (req, res) => {
+  let redirect_uri = `${config.BASE_URL}/bot`;
+  res.redirect(
+    `https://discord.com/oauth2/authorize?client_id=${config.DISCORD_CLIENT_ID}&permissions=275347671040&redirect_uri=${redirect_uri}&response_type=code&scope=bot`,
   );
 });
 
@@ -104,7 +112,7 @@ app.get(`${config.SUBPATH}/discord/callback`, async (req, res) => {
   }
 
   const code = req.query.code;
-  const redirect_uri = config.DISCORD_REDIRECT;
+  const redirect_uri = `${config.BASE_URL}/discord/callback`;
   const responseJson = await makeQuery(code, redirect_uri);
   const accessToken = responseJson.access_token;
 
@@ -127,6 +135,23 @@ app.get(`${config.SUBPATH}/discord/callback`, async (req, res) => {
   req.session.discordId = user.id;
 
   res.redirect(`${config.SUBPATH}/cas`);
+});
+
+app.get(`${config.SUBPATH}/bot`, async (req, res) => {
+  if (!req.query.code || !req.query.guild_id) {
+    res.send("You are not discord :angry:", 400);
+    return;
+  }
+
+  const code = req.query.code;
+  const redirect_uri = `${config.BASE_URL}/bot`;
+  const responseJson = await makeQuery(code, redirect_uri);
+  if (responseJson && responseJson.access_token) {
+    res.send("Added successfully!");     
+  } else {
+    logger.error(responseJson);
+    res.send("Unkown error occured");
+  }
 });
 
 const CAS = require("cas");

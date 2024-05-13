@@ -12,7 +12,6 @@ const ATLAS_URL = `${process.env.MONGO_URI}/${process.env.MONGO_DATABASE}`;
 
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const DISCORD_SECRET = process.env.DISCORD_SECRET;
-const DISCORD_REDIRECT = `${BASE_URL}/discord/callback`;
 
 // secret for express middleware
 const SECRET = process.env.SECRET;
@@ -29,5 +28,4 @@ module.exports = {
   ATLAS_URL,
   DISCORD_CLIENT_ID,
   DISCORD_SECRET,
-  DISCORD_REDIRECT,
 };
