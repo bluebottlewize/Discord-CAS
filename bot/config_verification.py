@@ -20,7 +20,7 @@ def read_and_validate_config(server_config: ConfigParser, config_file_path):
     - `config_file_path`: a string, the path to the file containing server configurations
     """
 
-    server_config.read(config_file_path)
+    server_config.read(config_file_path, encoding="utf-8")
 
     for section in server_config.sections():
         section_obj = server_config[section]
@@ -29,7 +29,7 @@ def read_and_validate_config(server_config: ConfigParser, config_file_path):
             "deleteroles",
             "is_academic",
             "setrealname",
-        }
+        }  # Add optional keys here
 
         for key in section_obj.keys():
             if key not in all_keys:
