@@ -8,7 +8,6 @@ This module defines the following function:
 from configparser import ConfigParser
 import sys
 
-
 def read_and_validate_config(server_config: ConfigParser, config_file_path):
     """
     Take in a `ConfigParser` object along with the path to a config file.
@@ -20,7 +19,7 @@ def read_and_validate_config(server_config: ConfigParser, config_file_path):
     - `config_file_path`: a string, the path to the file containing server configurations
     """
 
-    server_config.read(config_file_path, encoding="utf-8")
+    server_config.read(config_file_path)
 
     for section in server_config.sections():
         section_obj = server_config[section]
@@ -29,7 +28,7 @@ def read_and_validate_config(server_config: ConfigParser, config_file_path):
             "deleteroles",
             "is_academic",
             "setrealname",
-        }  # Add optional keys here
+        }
 
         for key in section_obj.keys():
             if key not in all_keys:
@@ -39,11 +38,10 @@ def read_and_validate_config(server_config: ConfigParser, config_file_path):
         if len(req_keys) != 0:
             print(f"Missing keys: {' ,'.join(req_keys)} in section {section}")
             return False
-
+        
         print(f"{section} config is valid!")
-
+    
     return True
-
 
 if __name__ == "__main__":
     if not read_and_validate_config(ConfigParser(), "server_config.ini"):

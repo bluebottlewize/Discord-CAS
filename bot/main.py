@@ -41,6 +41,7 @@ from pymongo import MongoClient, database
 from config_verification import read_and_validate_config
 
 load_dotenv()
+
 TOKEN = os.getenv("DISCORD_TOKEN")
 MONGO_DATABASE = os.getenv("MONGO_DATABASE")
 MONGO_URI = os.getenv("MONGO_URI")
@@ -55,9 +56,11 @@ SUBPATH = os.getenv("SUBPATH")
 BASE_URL = f"{PROTOCOL}://{HOST}{_PORT_AS_SUFFIX}{SUBPATH}"
 SERVER_CONFIG = ConfigParser()
 
-bot = commands.Bot(command_prefix=".")
-db: database.Database = None  # assigned in main function
+intent = discord.Intents.default()
+intent.message_content = True
+bot = commands.Bot(command_prefix=".", intents=intent)
 
+db: database.Database = None  # assigned in main function
 
 def get_users_from_discordid(user_id):
     """
@@ -82,7 +85,7 @@ def get_realname_from_discordid(user_id):
 
 async def send_link(ctx):
     """Sends the base url for users to reattempt sign-in."""
-    await ctx.send(f"<{BASE_URL}>\nSign in through our portal, and try again.")
+    await ctx.send(f"<{BASE_URL}>\nSign in through our portal, and try again.", ephemeral=True)
 
 
 def get_config(server_id: str):
@@ -161,7 +164,8 @@ async def post_verification(ctx, user):
 
     if server_config is None:
         await ctx.send(
-            "This server is not authorized to work with CAS-bot. Read the instructions to invite the bot in the project README"
+            "This server is not authorized to work with CAS-bot. Read the instructions to invite the bot in the project README",
+            ephemeral=True
         )
         await ctx.guild.leave()
         return
@@ -172,12 +176,12 @@ async def post_verification(ctx, user):
     try:
         await set_nickname(user, server_config)
     except discord.DiscordException:
-        await ctx.send("Bot should have a role higher than you to change your nickname")
+        await ctx.send("Bot should have a role higher than you to change your nickname", ephemeral=True)
 
-    await ctx.send(f"<@{user.id}> has been CAS-verified!")
+    await ctx.send(f"<@{user.id}> has been CAS-verified!", ephemeral=True)
 
 
-@bot.command(name="verify")
+@bot.hybrid_command(name="verify")
 async def verify_user(ctx):
     """
     Runs when the user types `.verify` in the server. First tries to find the user in the DB.
@@ -200,11 +204,12 @@ async def verify_user(ctx):
         else:
             await ctx.send(
                 f"Sorry <@{user_id}>, could not auto-detect your verification. \
-                    Please run `.verify` again."
+                    Please run `.verify` again.",
+                ephemeral=True
             )
 
 
-@bot.command(name="backend_info")
+@bot.hybrid_command(name="backend_info")
 async def backend_info(ctx):
     """For debugging server info; sends details of the server."""
     uname = platform.uname()
@@ -214,7 +219,8 @@ async def backend_info(ctx):
         f"node: {uname.node}\n"
         f"release: {uname.release}\n"
         f"version: {uname.version}\n"
-        f"machine: {uname.machine}"
+        f"machine: {uname.machine}",
+        ephemeral=True
     )
 
 
@@ -227,7 +233,7 @@ def is_academic(ctx: commands.Context):
     return server_config.get("is_academic", False)
 
 
-@bot.command(name="query")
+@bot.hybrid_command(name="query")
 @commands.check(is_academic)
 async def query(
     ctx: commands.Context,
@@ -240,11 +246,12 @@ async def query(
     """
     user = db.users.find_one({"discordId": str(identifier.id)})
     if user:
-        await ctx.reply(
-            f"Name: {user['name']}\nEmail: {user['email']}\nRoll Number: {user['rollno']}"
+        await ctx.send(
+            f"Name: {user['name']}\nEmail: {user['email']}\nRoll Number: {user['rollno']}",
+            ephemeral=True
         )
     else:
-        await ctx.reply(f"{identifier} is not registered with IIIT-CAS.")
+        await ctx.send(f"{identifier} is not registered with IIIT-CAS.", ephemeral=True)
 
 
 @query.error
@@ -253,10 +260,10 @@ async def query_error(ctx, error):
     For the `query` command, if the server is not academic, replies with error message.
     """
     if isinstance(error, commands.CheckFailure):
-        await ctx.reply("This server is not for academic purposes.")
+        await ctx.send("This server is not for academic purposes.", ephemeral=True)
 
 
-@bot.command(name="roll")
+@bot.hybrid_command(name="roll")
 @commands.check(is_academic)
 async def roll(
     ctx: commands.Context,
@@ -271,11 +278,12 @@ async def roll(
     """
     user = db.users.find_one({"rollno": str(identifier)})
     if user:
-        await ctx.reply(
-            f"Name: {user['name']}\nEmail: {user['email']}\nRoll Number: {user['rollno']}"
+        await ctx.send(
+            f"Name: {user['name']}\nEmail: {user['email']}\nRoll Number: {user['rollno']}",
+            ephemeral=True
         )
     else:
-        await ctx.reply(f"{identifier} is not registered with IIIT-CAS.")
+        await ctx.send(f"{identifier} is not registered with IIIT-CAS.", ephemeral=True)
 
 
 @roll.error
@@ -284,7 +292,7 @@ async def roll_error(ctx, error):
     For the `roll` command, if the server is not academic, replies with error message.
     """
     if isinstance(error, commands.CheckFailure):
-        await ctx.reply("This server is not for academic purposes.")
+        await ctx.reply("This server is not for academic purposes.", ephemeral=True)
 
 
 @bot.event
@@ -310,6 +318,11 @@ async def on_guild_join(guild):
 async def on_ready():
     """This is executed when the bot connects to a server."""
     print(f"{bot.user.name} has connected to Discord!")
+    try:
+        synced = await bot.tree.sync()
+        print(f"Synced {len(synced)} commands.")
+    except Exception as e:
+        print(e)
 
 
 def main():
