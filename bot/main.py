@@ -59,6 +59,7 @@ SERVER_CONFIG = ConfigParser()
 intent = discord.Intents.default()
 intent.message_content = True
 bot = commands.Bot(command_prefix=".", intents=intent)
+# to get message privelege
 
 db: database.Database = None  # assigned in main function
 
