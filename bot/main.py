@@ -62,6 +62,7 @@ bot = commands.Bot(command_prefix=".", intents=intent)
 
 db: database.Database = None  # assigned in main function
 
+
 def get_users_from_discordid(user_id):
     """
     Finds users from the database, given their ID and returns
@@ -85,7 +86,9 @@ def get_realname_from_discordid(user_id):
 
 async def send_link(ctx):
     """Sends the base url for users to reattempt sign-in."""
-    await ctx.send(f"<{BASE_URL}>\nSign in through our portal, and try again.", ephemeral=True)
+    await ctx.send(
+        f"<{BASE_URL}>\nSign in through our portal, and try again.", ephemeral=True
+    )
 
 
 def get_config(server_id: str):
@@ -165,7 +168,7 @@ async def post_verification(ctx, user):
     if server_config is None:
         await ctx.send(
             "This server is not authorized to work with CAS-bot. Read the instructions to invite the bot in the project README",
-            ephemeral=True
+            ephemeral=True,
         )
         await ctx.guild.leave()
         return
@@ -176,7 +179,10 @@ async def post_verification(ctx, user):
     try:
         await set_nickname(user, server_config)
     except discord.DiscordException:
-        await ctx.send("Bot should have a role higher than you to change your nickname", ephemeral=True)
+        await ctx.send(
+            "Bot should have a role higher than you to change your nickname",
+            ephemeral=True,
+        )
 
     await ctx.send(f"<@{user.id}> has been CAS-verified!", ephemeral=True)
 
@@ -205,7 +211,7 @@ async def verify_user(ctx):
             await ctx.send(
                 f"Sorry <@{user_id}>, could not auto-detect your verification. \
                     Please run `.verify` again.",
-                ephemeral=True
+                ephemeral=True,
             )
 
 
@@ -220,7 +226,7 @@ async def backend_info(ctx):
         f"release: {uname.release}\n"
         f"version: {uname.version}\n"
         f"machine: {uname.machine}",
-        ephemeral=True
+        ephemeral=True,
     )
 
 
@@ -248,7 +254,7 @@ async def query(
     if user:
         await ctx.send(
             f"Name: {user['name']}\nEmail: {user['email']}\nRoll Number: {user['rollno']}",
-            ephemeral=True
+            ephemeral=True,
         )
     else:
         await ctx.send(f"{identifier} is not registered with IIIT-CAS.", ephemeral=True)
@@ -280,7 +286,7 @@ async def roll(
     if user:
         await ctx.send(
             f"Name: {user['name']}\nEmail: {user['email']}\nRoll Number: {user['rollno']}",
-            ephemeral=True
+            ephemeral=True,
         )
     else:
         await ctx.send(f"{identifier} is not registered with IIIT-CAS.", ephemeral=True)

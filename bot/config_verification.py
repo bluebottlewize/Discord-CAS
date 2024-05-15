@@ -8,6 +8,7 @@ This module defines the following function:
 from configparser import ConfigParser
 import sys
 
+
 def read_and_validate_config(server_config: ConfigParser, config_file_path):
     """
     Take in a `ConfigParser` object along with the path to a config file.
@@ -38,10 +39,11 @@ def read_and_validate_config(server_config: ConfigParser, config_file_path):
         if len(req_keys) != 0:
             print(f"Missing keys: {' ,'.join(req_keys)} in section {section}")
             return False
-        
+
         print(f"{section} config is valid!")
-    
+
     return True
+
 
 if __name__ == "__main__":
     if not read_and_validate_config(ConfigParser(), "server_config.ini"):
