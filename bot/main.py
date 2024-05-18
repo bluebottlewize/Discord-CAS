@@ -185,7 +185,7 @@ async def post_verification(ctx, user):
             ephemeral=True,
         )
 
-    await ctx.send(f"<@{user.id}> has been CAS-verified!", ephemeral=True)
+    await ctx.send(f"<@{user.id}> has been CAS-verified!")
 
 
 @bot.hybrid_command(name="verify")
