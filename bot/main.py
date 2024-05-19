@@ -258,7 +258,9 @@ async def query(
             ephemeral=True,
         )
     else:
-        await ctx.reply(f"{identifier} is not registered with IIIT-CAS.", ephemeral=True)
+        await ctx.reply(
+            f"{identifier} is not registered with IIIT-CAS.", ephemeral=True
+        )
 
 
 @query.error
@@ -290,7 +292,9 @@ async def roll(
             ephemeral=True,
         )
     else:
-        await ctx.reply(f"{identifier} is not registered with IIIT-CAS.", ephemeral=True)
+        await ctx.reply(
+            f"{identifier} is not registered with IIIT-CAS.", ephemeral=True
+        )
 
 
 @roll.error
