@@ -87,7 +87,7 @@ def get_realname_from_discordid(user_id):
 
 async def send_link(ctx):
     """Sends the base url for users to reattempt sign-in."""
-    await ctx.send(
+    await ctx.reply(
         f"<{BASE_URL}>\nSign in through our portal, and try again.", ephemeral=True
     )
 
@@ -167,7 +167,7 @@ async def post_verification(ctx, user):
     server_config = get_config(server_id)
 
     if server_config is None:
-        await ctx.send(
+        await ctx.reply(
             "This server is not authorized to work with CAS-bot. Read the instructions to invite the bot in the project README",
             ephemeral=True,
         )
@@ -180,12 +180,12 @@ async def post_verification(ctx, user):
     try:
         await set_nickname(user, server_config)
     except discord.DiscordException:
-        await ctx.send(
+        await ctx.reply(
             "Bot should have a role higher than you to change your nickname",
             ephemeral=True,
         )
 
-    await ctx.send(f"<@{user.id}> has been CAS-verified!")
+    await ctx.reply(f"<@{user.id}> has been CAS-verified!")
 
 
 @bot.hybrid_command(name="verify")
@@ -209,7 +209,7 @@ async def verify_user(ctx):
             await send_link(ctx)
             await asyncio.sleep(60)
         else:
-            await ctx.send(
+            await ctx.reply(
                 f"Sorry <@{user_id}>, could not auto-detect your verification. \
                     Please run `.verify` again.",
                 ephemeral=True,
@@ -220,7 +220,7 @@ async def verify_user(ctx):
 async def backend_info(ctx):
     """For debugging server info; sends details of the server."""
     uname = platform.uname()
-    await ctx.send(
+    await ctx.reply(
         f"Here are the server details:\n"
         f"system: {uname.system}\n"
         f"node: {uname.node}\n"
@@ -253,12 +253,12 @@ async def query(
     """
     user = db.users.find_one({"discordId": str(identifier.id)})
     if user:
-        await ctx.send(
+        await ctx.reply(
             f"Name: {user['name']}\nEmail: {user['email']}\nRoll Number: {user['rollno']}",
             ephemeral=True,
         )
     else:
-        await ctx.send(f"{identifier} is not registered with IIIT-CAS.", ephemeral=True)
+        await ctx.reply(f"{identifier} is not registered with IIIT-CAS.", ephemeral=True)
 
 
 @query.error
@@ -267,7 +267,7 @@ async def query_error(ctx, error):
     For the `query` command, if the server is not academic, replies with error message.
     """
     if isinstance(error, commands.CheckFailure):
-        await ctx.send("This server is not for academic purposes.", ephemeral=True)
+        await ctx.reply("This server is not for academic purposes.", ephemeral=True)
 
 
 @bot.hybrid_command(name="roll")
@@ -285,12 +285,12 @@ async def roll(
     """
     user = db.users.find_one({"rollno": str(identifier)})
     if user:
-        await ctx.send(
+        await ctx.reply(
             f"Name: {user['name']}\nEmail: {user['email']}\nRoll Number: {user['rollno']}",
             ephemeral=True,
         )
     else:
-        await ctx.send(f"{identifier} is not registered with IIIT-CAS.", ephemeral=True)
+        await ctx.reply(f"{identifier} is not registered with IIIT-CAS.", ephemeral=True)
 
 
 @roll.error
