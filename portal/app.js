@@ -1,30 +1,7 @@
 const express = require("express");
-const session = require("express-session");
-const MongoStore = require("connect-mongo");
-const morgan = require("morgan");
-const fetch = require("node-fetch");
-const btoa = require("btoa");
 
 const config = require("./utils/config");
 const logger = require("./utils/logger");
-
-const User = require("./models/User");
-
-const parser = require("./utils/parser");
-
-let server_ids = [];
-
-parser.parseFile("server_config.ini", (error, data) => {
-  if (error) {
-    logger.error(error);
-    return;
-  }
-
-  // the default section does not have serverid
-  server_ids = Object.values(data)
-    .filter((val) => Object.hasOwn(val, "serverid"))
-    .map((x) => x.serverid);
-});
 
 const app = express();
 
@@ -35,13 +12,6 @@ app.use(
         req.rawBody = buf.toString(encoding || "utf8");
       }
     },
-  }),
-);
-app.use(morgan("dev"));
-app.use(
-  session({
-    secret: config.SECRET,
-    store: MongoStore.create({ mongoUrl: config.ATLAS_URL }),
   }),
 );
 
@@ -58,10 +28,9 @@ app.get(`${config.SUBPATH}/`, (req, res) => {
 });
 
 app.get(`${config.SUBPATH}/discord`, (req, res) => {
-  let redirect_uri = `${config.BASE_URL}/discord/callback`;
-  res.redirect(
-    `https://discordapp.com/api/oauth2/authorize?client_id=${config.DISCORD_CLIENT_ID}&scope=identify&response_type=code&redirect_uri=${redirect_uri}`,
-  );
+  // this endpoint has been removed, redirect to /cas endpoint which spits the
+  // error message
+  res.redirect(`${config.SUBPATH}/cas`);
 });
 
 app.get(`${config.SUBPATH}/discord/invite`, (req, res) => {
@@ -105,35 +74,8 @@ async function makeQuery(code, redirect_uri) {
 }
 
 app.get(`${config.SUBPATH}/discord/callback`, async (req, res) => {
-  /* Get user from discord */
-  if (!req.query.code) {
-    res.send("You are not discord :angry:", 400);
-    return;
-  }
-
-  const code = req.query.code;
-  const redirect_uri = `${config.BASE_URL}/discord/callback`;
-  const responseJson = await makeQuery(code, redirect_uri);
-  const accessToken = responseJson.access_token;
-
-  const userResponse = await fetch("https://discordapp.com/api/users/@me", {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-
-  const user = await userResponse.json();
-
-  if (!user) {
-    res.send(
-      "Some error occured while communicating to discord :pensive:",
-      500,
-    );
-    return;
-  }
-
-  req.session.discordId = user.id;
-
+  // this endpoint has been removed, redirect to /cas endpoint which spits the
+  // error message
   res.redirect(`${config.SUBPATH}/cas`);
 });
 
@@ -163,8 +105,10 @@ const cas = new CAS({
 });
 
 app.get(`${config.SUBPATH}/cas`, async (req, res) => {
-  if (!req.session.discordId) {
-    res.send("Please first authenticate from Discord :angry:", 500);
+  if (!req.query.token) {
+    res.send(
+      "Your verification link is invalid (may be expired or used already).\n"
+      + "Please run /verify again and use the new link", 400);
     return;
   }
 
@@ -194,27 +138,33 @@ app.get(`${config.SUBPATH}/cas`, async (req, res) => {
           .map((val) => val[0].toUpperCase() + val.substring(1))
           .join(" ");
 
-        const user = await User.findOrCreate(
-          { discordId: req.session.discordId },
-          {
-            discordId: req.session.discordId,
-            name,
-            rollno,
-            email: extended.attributes["e-mail"][0],
-          },
-        );
+        let form_data = new FormData();
+        form_data.append('name', name);
+        form_data.append('rollno', rollno);
+        form_data.append('email', extended.attributes["e-mail"][0]);
 
-        if (user) {
-          res.send(
-            "Success! :smile: You can now wait for the bot to auto-detect your verification, " +
-              "or run `.verify` once again.",
-          );
-        } else {
-          res.send("Some error occured :pensive:");
-        }
+        fetch(`http://${config.BOT_PRIVATE_IP}/${req.query.token}`, {
+          method: "POST",
+          body: form_data,
+        }).then(response => {
+          if (response.ok) {
+            res.send("You have successfully verified with the CAS login!");
+          } else if (response.status === 404) {
+            res.send(
+              "Your verification link expired!\n"
+              + "Please run /verify again and use the new link",
+              400
+            );
+          } else {
+            throw new Error(response.status);
+          }
+        })
+          .catch(err => {
+            res.send("Internal server error", 500);
+            logger.error(`Error in /cas fetch: ${err}`);
+          });
       }
-    },
-    config.BASE_URL + "/cas",
+    }
   );
 });
 

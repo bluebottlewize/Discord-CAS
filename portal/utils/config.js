@@ -8,24 +8,20 @@ const SUBPATH = process.env.SUBPATH;
 
 const BASE_URL = `${PROTOCOL}://${HOST}${_PORT_AS_SUFFIX}${SUBPATH}`;
 
-const ATLAS_URL = `${process.env.MONGO_URI}/${process.env.MONGO_DATABASE}`;
-
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const DISCORD_SECRET = process.env.DISCORD_SECRET;
-
-// secret for express middleware
-const SECRET = process.env.SECRET;
 
 // link to authenticate for CAS from
 const CAS_LINK = process.env.CAS_LINK;
 
+const BOT_PRIVATE_IP = process.env.BOT_PRIVATE_IP;
+
 module.exports = {
-  SECRET,
   CAS_LINK,
   PORT,
   SUBPATH,
   BASE_URL,
-  ATLAS_URL,
   DISCORD_CLIENT_ID,
   DISCORD_SECRET,
+  BOT_PRIVATE_IP,
 };
