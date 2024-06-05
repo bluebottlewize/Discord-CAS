@@ -25,7 +25,7 @@ information:
 1. Roll number
 1. DiscordID.
 
-1,2,3 are obtained from CAS, and 4 is obtained from Discord OAuth.
+1,2,3 are obtained from CAS, and 4 is obtained from Discord.
 
 This data is used strictly for authentication only, and not visible publicly.
 It is only visible to the server host.
@@ -70,14 +70,13 @@ You can create a new "Bot" role in your server and give it to our bot. This role
 
 1. The bot will only give the user role A if the bot's topmost role is above role A.
 2. To change the nickname for a user, the user's highest role should be lower than the bot's highest role.
-3. The bot should have read access to the channel to read `.verify` commands
 4. The bot should have write access to the channel to give feedback on verification (Success/Failure).
 
 (If you're new to Discord roles, read the FAQ: [link](https://support.discord.com/hc/en-us/articles/214836687-Role-Management-101))
 
 ### Notes
 
-1. `.verify` might not work for server-admins. That indicates your role setup does not follow the criteria above.
+1. `/verify` might not work for server-admins. That indicates your role setup does not follow the criteria above.
 
 If at any point you face any difficulty, please raise a new issue in this GitHub repository.
 
@@ -96,14 +95,7 @@ This instance is intended to be used only by IIIT-H related discord servers. See
 
 ## Hosting the project
 
-This project is made up of two parts, the web portal and the discord bot.
-
-The web portal does four things:
-
-1. Authenticates you against Discord OAuth2.
-2. Authenticates you against a CAS portal (feel free to change this to SAML, OAuth2, or whatever your organization prefers to use).
-3. Stores this data in MongoDB.
-4. Checks if the server is allowed in `server_config.ini`
+This project is made up of two parts, the web portal (in the [/portal](/portal) directory) and the discord bot (in the [/bot](/bot) directory)
 
 You may need to change the source code corresponding to your organization's CAS attributes; specifically, the `/cas` express endpoint has settings for which attributes to fetch from the CAS server response.
 

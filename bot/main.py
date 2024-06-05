@@ -8,13 +8,12 @@ This module defines the following functions.
 - `is_verified()`: If a user is present in DB or not
 - `check_bot_admin()`: Check if a user is a bot admin or not
 - `get_realname_from_discordid()`: Get a user's real name from their Discord ID.
-- `send_link()`: Send link for reattempting authentication.
 - `create_roles_if_missing()`: Adds missing roles to a server.
 - `assign_role()`: Adds specified roles to the given user post-verification.
 - `delete_role()`: Removes specified roles from the given user post-verification.
 - `set_nickname()`: Sets nickname of the given user to real name if server specifies.
 - `post_verification()`: Handle role add/delete and nickname set post-verification of given user.
-- `verify_user()`: Implements `.verify`.
+- `verify_user()`: Implements `/verify`.
 - `backend_info()`: Logs server details for debug purposes
 - `backend_info_error()`: If the author of the message is not a bot admin then reply accordingly.
 - `check_is_academic_mod()`: Checks if server is for academic use.
@@ -30,7 +29,11 @@ import os
 import sys
 import asyncio
 import platform
+import secrets
+import time
 from typing import TypedDict
+from aiohttp import web
+
 from dotenv import load_dotenv
 
 import discord
@@ -60,6 +63,10 @@ BASE_URL = f"{PROTOCOL}://{HOST}{_PORT_AS_SUFFIX}{SUBPATH}"
 
 BOT_ADMINS = {int(id) for id in os.getenv("BOT_ADMINS", "").split(",") if id}
 
+BOT_PRIVATE_IP = os.getenv("BOT_PRIVATE_IP")
+
+VERIFY_TIMEOUT_SECONDS = 300
+
 intent = discord.Intents.default()
 intent.message_content = True
 bot = commands.Bot(command_prefix=".", intents=intent)
@@ -67,13 +74,59 @@ bot = commands.Bot(command_prefix=".", intents=intent)
 
 db: database.Database | None = None  # assigned in main function
 
+# Yes, global variable. Not the most ideal thing but is efficient
+token_to_id: dict[str, tuple[int, float]] = {}
+
 
 class DBEntry(TypedDict):
     discordId: str
     name: str
     email: str
     rollno: str
-    view: bool
+
+
+async def webserver():
+    """
+    Launch an aiohttp web server.
+    This is an internal server used for the JS code in /portal to communicate
+    with the code here. This server MUST NOT be exposed to the public.
+    """
+
+    async def authenticate(request: web.Request):
+        if db is None:
+            # should not happen, but if it somehow does, it's a server error
+            return web.Response(status=500)
+
+        token = request.match_info["token"]
+        try:
+            discord_id = str(token_to_id.pop(token)[0])
+        except KeyError:
+            # the token has already expired
+            return web.Response(status=404)
+
+        data = await request.post()
+        search = {"discordId": discord_id}
+        try:
+            updated = {
+                "discordId": discord_id,
+                "name": data["name"],
+                "email": data["email"],
+                "rollno": data["rollno"],
+            }
+        except KeyError:
+            # client sent bad request
+            return web.Response(status=400)
+
+        db.users.update_one(search, {"$set": updated}, upsert=True)
+        return web.Response()
+
+    app = web.Application()
+    app.add_routes([web.post("/{token}", authenticate)])
+
+    # run app async
+    runner = web.AppRunner(app)
+    await runner.setup()
+    await web.TCPSite(runner, BOT_PRIVATE_IP, 80).start()
 
 
 def get_users_from_discordid(user_id: int):
@@ -103,13 +156,6 @@ def get_realname_from_discordid(user_id: int):
     users = get_users_from_discordid(user_id)
     assert users
     return users[0]["name"]
-
-
-async def send_link(ctx: commands.Context):
-    """Sends the base url for users to reattempt sign-in."""
-    await ctx.reply(
-        f"<{BASE_URL}>\nSign in through our portal, and try again.", ephemeral=True
-    )
 
 
 def get_first_channel_with_permission(guild: discord.Guild):
@@ -206,27 +252,61 @@ async def post_verification(
 @bot.hybrid_command(name="verify")
 async def verify_user(ctx: commands.Context):
     """
-    Runs when the user types `.verify` in the server. First tries to find the user in the DB.
-    If present, performs post-verification actions. If not verified, Sends the link to authenticate
-    and waits for a minute. xits if the user still is not found after that and
-    tells user to run `.verify` again.
-    """
-    author = ctx.message.author
-    for i in range(2):
-        verification = is_verified(author.id)
+    Verify yourself with a CAS login.
 
-        if verification:
-            await post_verification(ctx, author)
+    Runs when the user does `/verify` in the server. First tries to find the user.
+    If present, performs post-verification actions. If not verified, creates and sends
+    a unique verification link. Handles the link timeout and also performs post-verify
+    actions if the user could verify within the timeout.
+    """
+    if not ctx.interaction:
+        await ctx.reply("This command has been removed, please use /verify instead.")
+        return
+
+    author = ctx.message.author
+    if is_verified(author.id):
+        # user has already previously verified
+        await post_verification(ctx, author)
+        return
+
+    old_link = True
+    for loop_token, (loop_discord_id, loop_expire_time) in token_to_id.items():
+        if loop_discord_id == author.id:
+            # user already has an active link
+            token = loop_token
+            expire_time = loop_expire_time
             break
-        if i == 0:
-            await send_link(ctx)
-            await asyncio.sleep(60)
-        else:
-            await ctx.reply(
-                f"Sorry {author.mention}, could not auto-detect your verification. \
-                    Please run `.verify` again.",
-                ephemeral=True,
-            )
+    else:
+        old_link = False
+        token = secrets.token_urlsafe()
+        expire_time = time.time() + VERIFY_TIMEOUT_SECONDS
+        token_to_id[token] = (author.id, expire_time)
+
+    # it is important that is is ephemeral. It has a secret link that only the
+    # invoker must see.
+    await ctx.send(
+        f"[This](<{BASE_URL}/cas?token={token}>) is your verification link, click "
+        "it to login and verify yourself.\n"
+        "IMPORTANT NOTE: Above link is secret, do not share with anyone! "
+        f"This link expires <t:{int(expire_time)}:R>.",
+        ephemeral=True,
+    )
+
+    if old_link:
+        return
+
+    while time.time() < expire_time and token in token_to_id:
+        await asyncio.sleep(1)
+
+    if token not in token_to_id and is_verified(author.id):
+        await post_verification(ctx, author)
+        return
+
+    # time-out has happened, and no success. pop token to expire link
+    token_to_id.pop(token, None)
+    await ctx.reply(
+        f"{author.mention}, you haven't been CAS-verified, you may retry to /verify"
+    )
 
 
 @bot.hybrid_command(name="backend_info")
@@ -380,6 +460,8 @@ async def on_ready():
         print(f"Synced {len(synced)} commands.")
     except Exception as e:
         print(e)
+
+    bot.loop.create_task(webserver())
 
 
 def main():

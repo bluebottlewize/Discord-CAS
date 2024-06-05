@@ -11,6 +11,11 @@ services:
         build:
             context: ./bot
             dockerfile: Dockerfile
+        networks:
+            portal_network:
+                # this IP must be private and NOT EXPOSED via any proxy to the
+                # public
+                ipv4_address: ${BOT_PRIVATE_IP}
         env_file:
             - ./.env
         volumes:
@@ -23,7 +28,7 @@ services:
             dockerfile: Dockerfile
         networks:
             portal_network:
-                ipv4_address: 172.20.0.5
+                ipv4_address: ${PORTAL_PRIVATE_IP}
         env_file:
             - ./.env
         volumes:
