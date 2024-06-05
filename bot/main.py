@@ -6,6 +6,7 @@ This module defines the following functions.
 
 - `get_users_from_discordid()`: Find users from DB given user ID
 - `is_verified()`: If a user is present in DB or not
+- `check_bot_admin()`: Check if a user is a bot admin or not
 - `get_realname_from_discordid()`: Get a user's real name from their Discord ID.
 - `send_link()`: Send link for reattempting authentication.
 - `create_roles_if_missing()`: Adds missing roles to a server.
@@ -15,6 +16,7 @@ This module defines the following functions.
 - `post_verification()`: Handle role add/delete and nickname set post-verification of given user.
 - `verify_user()`: Implements `.verify`.
 - `backend_info()`: Logs server details for debug purposes
+- `backend_info_error()`: If the author of the message is not a bot admin then reply accordingly.
 - `is_academic()`: Checks if server is for academic use.
 - `query()`: Returns user details, uses Discord ID to find in DB.
 - `query_error()`: Replies eror message if server is not academic.
@@ -89,6 +91,12 @@ def get_users_from_discordid(user_id: int):
 def is_verified(user_id: int):
     """Checks if any user with the given ID exists in the DB or not."""
     return True if get_users_from_discordid(user_id) else False
+
+
+@commands.check
+def check_bot_admin(ctx: commands.Context):
+    """Checks if the user with the given discord ID is a bot admin or not."""
+    return ctx.author.id in BOT_ADMINS
 
 
 def get_realname_from_discordid(user_id: int):
@@ -223,6 +231,7 @@ async def verify_user(ctx: commands.Context):
 
 
 @bot.hybrid_command(name="backend_info")
+@check_bot_admin
 async def backend_info(ctx: commands.Context):
     """For debugging server info; sends details of the server."""
     uname = platform.uname()
@@ -235,6 +244,13 @@ async def backend_info(ctx: commands.Context):
         f"machine: {uname.machine}",
         ephemeral=True,
     )
+
+
+@backend_info.error
+async def backend_info_error(ctx: commands.Context, error: Exception):
+    """If the author of the message is not a bot admin then reply accordingly."""
+    if isinstance(error, commands.CheckFailure):
+        await ctx.reply(f"{ctx.author.mention} is not a bot admin.", ephemeral=True)
 
 
 def is_academic(ctx: commands.Context):
