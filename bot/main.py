@@ -17,7 +17,7 @@ This module defines the following functions.
 - `verify_user()`: Implements `.verify`.
 - `backend_info()`: Logs server details for debug purposes
 - `backend_info_error()`: If the author of the message is not a bot admin then reply accordingly.
-- `check_is_academic()`: Checks if server is for academic use.
+- `check_is_academic_mod()`: Checks if server is for academic use.
 - `query()`: Returns user details, uses Discord ID to find in DB.
 - `roll()`: Returns user details, uses roll number to find in DB.
 - `roll_or_query_error()`: Replies eror message if server is not academic or author is not a bot admin.
@@ -253,19 +253,26 @@ async def backend_info_error(ctx: commands.Context, error: Exception):
 
 
 @commands.check
-def check_is_academic(ctx: commands.Context):
-    """Checks if the server is an academic server."""
+async def check_is_academic_mod(ctx: commands.Context):
+    """
+    Checks if the server is an academic server, and that the invoker has moderation
+    permissions
+    """
     if ctx.guild is None:
         return False
 
     try:
-        return server_configs[ctx.guild.id]["is_academic"]
+        if server_configs[ctx.guild.id]["is_academic"]:
+            return await commands.has_permissions(moderate_members=True).predicate(ctx)
+
     except KeyError:
-        return False
+        pass
+
+    return False
 
 
 @bot.hybrid_command(name="query")
-@commands.check_any(check_is_academic, check_bot_admin)
+@commands.check_any(check_is_academic_mod, check_bot_admin)
 async def query(
     ctx: commands.Context,
     identifier: discord.User,
@@ -297,7 +304,7 @@ async def query(
 
 
 @bot.hybrid_command(name="roll")
-@commands.check_any(check_is_academic, check_bot_admin)
+@commands.check_any(check_is_academic_mod, check_bot_admin)
 async def roll(
     ctx: commands.Context,
     identifier: int,
