@@ -107,65 +107,64 @@ const cas = new CAS({
 app.get(`${config.SUBPATH}/cas`, async (req, res) => {
   if (!req.query.token) {
     res.send(
-      "Your verification link is invalid (may be expired or used already).\n"
-      + "Please run /verify again and use the new link", 400);
+      "Your verification link is invalid (may be expired or used already).\n" +
+        "Please run /verify again and use the new link",
+      400,
+    );
     return;
   }
 
-  await cas.authenticate(
-    req,
-    res,
-    async (err, status, username, extended) => {
-      if (err) {
-        res.send("Some error occured with the CAS server :pensive:", 500);
-      } else {
-        if (!status) {
-          /* TODO: Identify what status false means */
-          res.send("Status false?", 500);
-        }
+  await cas.authenticate(req, res, async (err, status, username, extended) => {
+    if (err) {
+      res.send("Some error occured with the CAS server :pensive:", 500);
+    } else {
+      if (!status) {
+        /* TODO: Identify what status false means */
+        res.send("Status false?", 500);
+      }
 
-        let rollno;
-        try {
-          rollno = extended.attributes.rollno[0];
-        } catch (e) {
-          rollno = "not-existent";
-          logger.info("User roll number does not exist");
-        }
+      let rollno;
+      try {
+        rollno = extended.attributes.rollno[0];
+      } catch (e) {
+        rollno = "not-existent";
+        logger.info("User roll number does not exist");
+      }
 
-        let name = extended.attributes.name[0];
-        name = name
-          .split(" ")
-          .map((val) => val[0].toUpperCase() + val.substring(1))
-          .join(" ");
+      let name = extended.attributes.name[0];
+      name = name
+        .split(" ")
+        .map((val) => val[0].toUpperCase() + val.substring(1))
+        .join(" ");
 
-        let form_data = new FormData();
-        form_data.append('name', name);
-        form_data.append('rollno', rollno);
-        form_data.append('email', extended.attributes["e-mail"][0]);
+      let form_data = new FormData();
+      form_data.append("name", name);
+      form_data.append("rollno", rollno);
+      form_data.append("email", extended.attributes["e-mail"][0]);
 
-        fetch(`http://${config.BOT_PRIVATE_IP}/${req.query.token}`, {
-          method: "POST",
-          body: form_data,
-        }).then(response => {
+      fetch(`http://${config.BOT_PRIVATE_IP}/${req.query.token}`, {
+        method: "POST",
+        body: form_data,
+      })
+        .then((response) => {
           if (response.ok) {
             res.send("You have successfully verified with the CAS login!");
           } else if (response.status === 404) {
             res.send(
-              "Your verification link expired!\n"
-              + "Please run /verify again and use the new link",
-              400
+              "Your verification link expired!\n" +
+                "Please run /verify again and use the new link",
+              400,
             );
           } else {
             throw new Error(response.status);
           }
         })
-          .catch(err => {
-            res.send("Internal server error", 500);
-            logger.error(`Error in /cas fetch: ${err}`);
-          });
-      }
+        .catch((err) => {
+          res.send("Internal server error", 500);
+          logger.error(`Error in /cas fetch: ${err}`);
+        });
     }
-  );
+  });
 });
 
 module.exports = app;

@@ -70,7 +70,7 @@ You can create a new "Bot" role in your server and give it to our bot. This role
 
 1. The bot will only give the user role A if the bot's topmost role is above role A.
 2. To change the nickname for a user, the user's highest role should be lower than the bot's highest role.
-4. The bot should have write access to the channel to give feedback on verification (Success/Failure).
+3. The bot should have write access to the channel to give feedback on verification (Success/Failure).
 
 (If you're new to Discord roles, read the FAQ: [link](https://support.discord.com/hc/en-us/articles/214836687-Role-Management-101))
 
