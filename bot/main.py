@@ -17,11 +17,10 @@ This module defines the following functions.
 - `verify_user()`: Implements `.verify`.
 - `backend_info()`: Logs server details for debug purposes
 - `backend_info_error()`: If the author of the message is not a bot admin then reply accordingly.
-- `is_academic()`: Checks if server is for academic use.
+- `check_is_academic()`: Checks if server is for academic use.
 - `query()`: Returns user details, uses Discord ID to find in DB.
-- `query_error()`: Replies eror message if server is not academic.
 - `roll()`: Returns user details, uses roll number to find in DB.
-- `roll_error()`: Replies eror message if server is not academic.
+- `roll_or_query_error()`: Replies eror message if server is not academic or author is not a bot admin.
 - `on_ready()`: Logs a message when the bot joins a server.
 - `main()`: Reads server config, loads DB and starts bot.
 
@@ -253,7 +252,8 @@ async def backend_info_error(ctx: commands.Context, error: Exception):
         await ctx.reply(f"{ctx.author.mention} is not a bot admin.", ephemeral=True)
 
 
-def is_academic(ctx: commands.Context):
+@commands.check
+def check_is_academic(ctx: commands.Context):
     """Checks if the server is an academic server."""
     if ctx.guild is None:
         return False
@@ -265,15 +265,16 @@ def is_academic(ctx: commands.Context):
 
 
 @bot.hybrid_command(name="query")
-@commands.check(is_academic)
+@commands.check_any(check_is_academic, check_bot_admin)
 async def query(
     ctx: commands.Context,
     identifier: discord.User,
 ):
     """
-    First checks if the server is an academic one. If so, finds the user who invoked the
-    command (by Discord ID) in the DB. If present, replies with their name, email and
-    roll number. Otherwise replies telling the user they are not registed with CAS.
+    First checks if the server is an academic one or if the author is a bot admin.
+    If so, finds the user mentioned (by Discord ID) in the command in the DB.
+    If present, replies with their name, email and roll number. Otherwise
+    replies telling the author that the mentioned user is not registed with CAS.
     """
     if db is None:
         await ctx.reply(
@@ -295,27 +296,20 @@ async def query(
         )
 
 
-@query.error
-async def query_error(ctx: commands.Context, error: Exception):
-    """
-    For the `query` command, if the server is not academic, replies with error message.
-    """
-    if isinstance(error, commands.CheckFailure):
-        await ctx.reply("This server is not for academic purposes.", ephemeral=True)
-
-
 @bot.hybrid_command(name="roll")
-@commands.check(is_academic)
+@commands.check_any(check_is_academic, check_bot_admin)
 async def roll(
     ctx: commands.Context,
     identifier: int,
 ):
     """
-     First checks if the server is an academic one. If so, finds the user who invoked the
-    command in the DB. If present, replies with their name, email and
-    roll number. Otherwise replies telling the user they are not registed with CAS.
+    First checks if the server is an academic one or if the author is a bot admin.
+    If so, finds the user mentioned in the command in the DB. If present, replies
+    with their name, email and roll number. Otherwise replies telling the author
+    that the mentioned user is not registed with CAS.
 
-    Same as the `query` command, except this searches by roll number instead of Discord ID.
+    Same as the `query` command, except the user is mentioned by roll number
+    instead of Discord ID.
     """
     if db is None:
         await ctx.reply(
@@ -337,13 +331,19 @@ async def roll(
         )
 
 
+@query.error
 @roll.error
-async def roll_error(ctx: commands.Context, error: Exception):
+async def roll_or_query_error(ctx: commands.Context, error: Exception):
     """
-    For the `roll` command, if the server is not academic, replies with error message.
+    For the `roll` and `query` commands, if the server is not academic and if
+    the author is not a bot admin, replies with an error message.
     """
     if isinstance(error, commands.CheckFailure):
-        await ctx.reply("This server is not for academic purposes.", ephemeral=True)
+        await ctx.reply(
+            "This server is not for academic purposes "
+            f"and {ctx.author.mention} is not a bot admin.",
+            ephemeral=True,
+        )
 
 
 @bot.event
