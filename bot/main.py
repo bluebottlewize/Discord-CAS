@@ -34,8 +34,6 @@ import time
 from typing import TypedDict
 from aiohttp import web
 
-from dotenv import load_dotenv
-
 import discord
 from discord.ext import commands
 
@@ -45,8 +43,6 @@ from config_verification import ConfigEntry, server_configs
 
 if not server_configs:
     sys.exit(1)
-
-load_dotenv()
 
 TOKEN = os.getenv("DISCORD_TOKEN")
 MONGO_DATABASE = os.getenv("MONGO_DATABASE")
